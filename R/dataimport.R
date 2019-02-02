@@ -1,23 +1,28 @@
 #' Load a single .txt data file from "data quest art" software
 #'
 #' Load a single .txt file with two columns, and creates column names.
-#' File name should be "Variablename_groupname_ratID.txt", as these are used
+#' File name should be "Variablename_groupname_animalID.txt", as these are used
 #' to create column names, as well as group and id columns.
 #'
 #' @param path path to file
-#' @param baselinedays number of days in baseline condition, defaults to 4
-#' @param exposuredays number of days in exposure condition, defaults to 5
+#' @param baseline number of days in baseline condition, defaults to 4
+#' @param exposure number of days in exposure condition, defaults to 5
 #' @param zeitgebertime number indicating start of light period, defaults to 7 (= 07:00)
+#' @param maxbaseline number of maximum baseline days in experiment
 #'
 #' @return
 #' @export
 #'
 #' @examples
 load_single_file <- function(path,
-                             baselinedays = 4,
-                             exposuredays = 5,
-                             zeitgebertime = 7){
+                             baseline = 4,
+                             exposure = 5,
+                             zeitgebertime = 7,
+                             maxbaseline = 4){
 
+  baseline <- as.numeric(baseline)
+  exposure <- as.numeric(exposure)
+  zeitgebertime <- as.numeric(zeitgebertime)
 
   readr::read_delim(path,
                   delim = ",",
@@ -32,37 +37,38 @@ load_single_file <- function(path,
                 Group = stringr::str_extract(basename(path), "(?<=_)\\w+?(?=_)"),
                 Zeitgebertime = Datetime - hours(zeitgebertime),
                 Day = lubridate::day(Zeitgebertime) - lubridate::day(Zeitgebertime[1]) + 1,
-                Experiment_period = dplyr::case_when(Day <= baselinedays ~ "Baseline",
-                                                     Day <= baselinedays + exposuredays ~ "Exposure",
+                Experiment_period = dplyr::case_when(Day <= baseline ~ "Baseline",
+                                                     Day <= baseline + exposure ~ "Exposure",
                                                      TRUE ~ "Recovery"),
                 Zeitgebertime = Zeitgebertime-Zeitgebertime[1]-(Day-1)*86400,
-                Syncdatetime = lubridate::ymd_hms("20190101000000")+Zeitgebertime)
+                Syncdatetime = lubridate::ymd_hms("20190101000000")+Zeitgebertime + days(Day-1 + maxbaseline-baseline))
 }
 
 
-
-#' Combine files from same rat into a tibble
+#' Combine files from same animal into a tibble
 #'
-#' Takes a list of .txt files from the same rat and produces a tibble with all variables
+#' Takes a list of .txt files from the same animal and produces a tibble with all variables
 #'
-#' @param filepaths a list of files
-#' @param baselinedays number of days in baseline condition, defaults to 4
-#' @param exposuredays number of days in exposure condition, defaults to 5
+#' @param filepaths a character vector of file names for the same animal
+#' @param baseline number of days in baseline condition, defaults to 4
+#' @param exposure number of days in exposure condition, defaults to 5
 #' @param zeitgebertime number indicating start of light period, defaults to 7 (= 07:00)
+#' @param maxbaseline number of maximum baseline days in experiment
 #'
 #' @return
 #' @export
 #'
 #' @examples
 combine_files <- function(filepaths,
-                          baselinedays,
-                          exposuredays,
-                          zeitgebertime = 7){
+                          baseline = 4,
+                          exposure = 5,
+                          zeitgebertime = 7,
+                          maxbaseline = 4){
 
-  d <- load_single_file(filepaths[1], baselinedays, exposuredays, zeitgebertime)
+  d <- load_single_file(filepaths[1], baseline, exposure, zeitgebertime)
 
   for(i in 2:length(filepaths)){
-    d <- dplyr::left_join(d, load_single_file(filepaths[i], baselinedays, exposuredays, zeitgebertime))
+    d <- dplyr::left_join(d, load_single_file(filepaths[i], baseline, exposure, zeitgebertime))
   }
 
   d %>%
@@ -75,3 +81,8 @@ combine_files <- function(filepaths,
                   Zeitgebertime,
                   everything())
 }
+
+
+d <- bind_rows(combine_files(c("./Data/Activity_B_11.txt", "./Data/Bodytemp_B_11.txt")),
+          combine_files(c("./Data/Activity_B_8.txt", "./Data/Bodytemp_B_8.txt"), 4,5,7),
+          combine_files(c("./Data/Activity_W_12.txt", "./Data/Bodytemp_W_12.txt"), 4,5,7))
