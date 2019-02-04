@@ -106,6 +106,7 @@ check_length <- function(argument, control){
 #' @param maxbaseline A number of maximum baseline days in experiment, defaults to 5
 #'
 #' @return a tibble
+#'
 #' @export
 #'
 #' @examples
