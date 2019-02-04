@@ -4,20 +4,25 @@
 \alias{load_single_file}
 \title{Load a single .txt data file from "data quest art" software}
 \usage{
-load_single_file(path, baselinedays = 4, exposuredays = 5,
-  zeitgebertime = 7)
+load_single_file(path, baseline = 5, exposure = 7, zeitgebertime = 7,
+  maxbaseline = 5)
 }
 \arguments{
 \item{path}{path to file}
 
-\item{baselinedays}{number of days in baseline condition, defaults to 4}
+\item{baseline}{number of days in baseline condition, defaults to 5}
 
-\item{exposuredays}{number of days in exposure condition, defaults to 5}
+\item{exposure}{number of days in exposure condition, defaults to 7}
 
 \item{zeitgebertime}{number indicating start of light period, defaults to 7 (= 07:00)}
+
+\item{maxbaseline}{number of maximum baseline days in experiment, defaults to 5}
+}
+\value{
+a tibble
 }
 \description{
 Load a single .txt file with two columns, and creates column names.
-File name should be "Variablename_groupname_ratID.txt", as these are used
+File name should be "Variablename_groupname_animalID.txt", as these are used
 to create column names, as well as group and id columns.
 }

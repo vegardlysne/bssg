@@ -5,20 +5,19 @@
 #' to create column names, as well as group and id columns.
 #'
 #' @param path path to file
-#' @param baseline number of days in baseline condition, defaults to 4
-#' @param exposure number of days in exposure condition, defaults to 5
+#' @param baseline number of days in baseline condition, defaults to 5
+#' @param exposure number of days in exposure condition, defaults to 7
 #' @param zeitgebertime number indicating start of light period, defaults to 7 (= 07:00)
-#' @param maxbaseline number of maximum baseline days in experiment
+#' @param maxbaseline number of maximum baseline days in experiment, defaults to 5
 #'
-#' @return
+#' @return a tibble
 #' @export
 #'
-#' @examples
 load_single_file <- function(path,
-                             baseline = 4,
-                             exposure = 5,
+                             baseline = 5,
+                             exposure = 7,
                              zeitgebertime = 7,
-                             maxbaseline = 4){
+                             maxbaseline = 5){
 
   baseline <- as.numeric(baseline)
   exposure <- as.numeric(exposure)
@@ -35,13 +34,13 @@ load_single_file <- function(path,
   purrr::modify_at(1, lubridate::as_datetime) %>%
   dplyr::mutate(Id = stringr::str_extract(basename(path), "(?<=_)[:digit:]+(?=.txt)"),
                 Group = stringr::str_extract(basename(path), "(?<=_)\\w+?(?=_)"),
-                Zeitgebertime = Datetime - hours(zeitgebertime),
-                Day = lubridate::day(Zeitgebertime) - lubridate::day(Zeitgebertime[1]) + 1,
-                Experiment_period = dplyr::case_when(Day <= baseline ~ "Baseline",
-                                                     Day <= baseline + exposure ~ "Exposure",
+                Zeitgebertime = Datetime - lubridate::hours(zeitgebertime),
+                Day = lubridate::day(Zeitgebertime) - lubridate::day(Zeitgebertime[1]) + 1 + maxbaseline-baseline,
+                Experiment_period = dplyr::case_when(Day <= maxbaseline ~ "Baseline",
+                                                     Day <= maxbaseline + exposure ~ "Exposure",
                                                      TRUE ~ "Recovery"),
-                Zeitgebertime = Zeitgebertime-Zeitgebertime[1]-(Day-1)*86400,
-                Syncdatetime = lubridate::ymd_hms("20190101000000")+Zeitgebertime + days(Day-1 + maxbaseline-baseline))
+                Zeitgebertime = Zeitgebertime-Zeitgebertime[1]-(Day-1)*86400 + (maxbaseline-baseline)*86400,
+                Syncdatetime = lubridate::ymd_hms("20190101000000")+Zeitgebertime + lubridate::days(Day-1))
 }
 
 
@@ -50,25 +49,29 @@ load_single_file <- function(path,
 #' Takes a list of .txt files from the same animal and produces a tibble with all variables
 #'
 #' @param filepaths a character vector of file names for the same animal
-#' @param baseline number of days in baseline condition, defaults to 4
-#' @param exposure number of days in exposure condition, defaults to 5
+#' @param baseline number of days in baseline condition, defaults to 5
+#' @param exposure number of days in exposure condition, defaults to 7
 #' @param zeitgebertime number indicating start of light period, defaults to 7 (= 07:00)
-#' @param maxbaseline number of maximum baseline days in experiment
+#' @param maxbaseline number of maximum baseline days in experiment, defaults to 5
 #'
-#' @return
+#' @return a tibble
 #' @export
 #'
-#' @examples
 combine_files <- function(filepaths,
-                          baseline = 4,
-                          exposure = 5,
+                          baseline = 5,
+                          exposure = 7,
                           zeitgebertime = 7,
-                          maxbaseline = 4){
+                          maxbaseline = 5){
 
-  d <- load_single_file(filepaths[1], baseline, exposure, zeitgebertime)
+  d <- load_single_file(filepaths[1], baseline, exposure, zeitgebertime, maxbaseline)
 
   for(i in 2:length(filepaths)){
-    d <- dplyr::left_join(d, load_single_file(filepaths[i], baseline, exposure, zeitgebertime))
+    d <- dplyr::left_join(d,
+                          load_single_file(filepaths[i],
+                                           baseline,
+                                           exposure,
+                                           zeitgebertime,
+                                           maxbaseline))
   }
 
   d %>%
@@ -79,10 +82,61 @@ combine_files <- function(filepaths,
                   Experiment_period,
                   Day,
                   Zeitgebertime,
-                  everything())
+                  dplyr::everything())
 }
 
 
-d <- bind_rows(combine_files(c("./Data/Activity_B_11.txt", "./Data/Bodytemp_B_11.txt")),
-          combine_files(c("./Data/Activity_B_8.txt", "./Data/Bodytemp_B_8.txt"), 4,5,7),
-          combine_files(c("./Data/Activity_W_12.txt", "./Data/Bodytemp_W_12.txt"), 4,5,7))
+#' Load data set
+#'
+#' @param filepaths A named list of character vectors, indicating the paths to all
+#' the files of the same animal.
+#' @param baseline A named list of the number of baselinedays for each animal,
+#' or a number if it is the same for each animal, no default
+#' @param exposure A number, indicating length of exposure period in days, defaults to 5
+#' @param zeitgebertime A named list indicating start of light period for each animal,
+#' or a number if it is the same for each animal
+#' @param maxbaseline A number of maximum baseline days in experiment, defaults to 5
+#'
+#' @return a tibble
+#'
+#' @examples
+#' animals <- list(B8 = c("./Data/Activity_B_8.txt", "./Data/Bodytemp_B_8.txt"),
+#'                 W12 = c("./Data/Activity_W_12.txt", "./Data/Bodytemp_W_12.txt"))
+#' baselinedays <- list(B8 = 5, W12 = 4)
+#'
+#' create_data(animals,
+#'             baseline = baselinedays,
+#'             exposure = 7,
+#'             zeitgebertime = 7,
+#'             maxbaseline = 5)
+#'
+create_data <- function(filepaths,
+                        baseline,
+                        exposure = 7,
+                        zeitgebertime,
+                        maxbaseline = 5){
+
+  baseline <- check_length(baseline, filepaths)
+
+  exposure <- check_length(exposure, filepaths)
+
+  zeitgebertime <- check_length(zeitgebertime, filepaths)
+
+  purrr::pmap_df(list(filepaths, baseline, zeitgebertime),
+                 function(x,y,z) combine_files(filepaths = x,
+                                               baseline = y,
+                                               exposure = exposure,
+                                               zeitgebertime = z,
+                                               maxbaseline = maxbaseline))
+
+}
+
+
+# Helperfunctions to check that argument length = filepath length
+check_length <- function(argument, control){
+
+    if(!(length(argument) == length(control)) & !(length(argument) == 1)){
+    stop("baseline, exposure and zeitgebertime must be same length as filepaths or 1")
+    }
+  argument
+}

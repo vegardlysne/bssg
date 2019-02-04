@@ -2,19 +2,25 @@
 % Please edit documentation in R/dataimport.R
 \name{combine_files}
 \alias{combine_files}
-\title{Combine files from same rat into a tibble}
+\title{Combine files from same animal into a tibble}
 \usage{
-combine_files(filepaths, baselinedays, exposuredays, zeitgebertime = 7)
+combine_files(filepaths, baseline = 5, exposure = 7,
+  zeitgebertime = 7, maxbaseline = 5)
 }
 \arguments{
-\item{filepaths}{a list of files}
+\item{filepaths}{a character vector of file names for the same animal}
 
-\item{baselinedays}{number of days in baseline condition, defaults to 4}
+\item{baseline}{number of days in baseline condition, defaults to 5}
 
-\item{exposuredays}{number of days in exposure condition, defaults to 5}
+\item{exposure}{number of days in exposure condition, defaults to 7}
 
 \item{zeitgebertime}{number indicating start of light period, defaults to 7 (= 07:00)}
+
+\item{maxbaseline}{number of maximum baseline days in experiment, defaults to 5}
+}
+\value{
+a tibble
 }
 \description{
-Takes a list of .txt files from the same rat and produces a tibble with all variables
+Takes a list of .txt files from the same animal and produces a tibble with all variables
 }
