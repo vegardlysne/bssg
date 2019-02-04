@@ -2,5 +2,6 @@
 
 export("%>%")
 export(combine_files)
+export(create_data)
 export(load_single_file)
 importFrom(magrittr,"%>%")

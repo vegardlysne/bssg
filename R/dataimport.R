@@ -85,6 +85,14 @@ combine_files <- function(filepaths,
                   dplyr::everything())
 }
 
+# Helperfunctions to check that argument length = filepath length
+check_length <- function(argument, control){
+
+  if(!(length(argument) == length(control)) & !(length(argument) == 1)){
+    stop("baseline, exposure and zeitgebertime must be same length as filepaths or 1")
+  }
+  argument
+}
 
 #' Load data set
 #'
@@ -98,6 +106,7 @@ combine_files <- function(filepaths,
 #' @param maxbaseline A number of maximum baseline days in experiment, defaults to 5
 #'
 #' @return a tibble
+#' @export
 #'
 #' @examples
 #' animals <- list(B8 = c("./Data/Activity_B_8.txt", "./Data/Bodytemp_B_8.txt"),
@@ -132,11 +141,3 @@ create_data <- function(filepaths,
 }
 
 
-# Helperfunctions to check that argument length = filepath length
-check_length <- function(argument, control){
-
-    if(!(length(argument) == length(control)) & !(length(argument) == 1)){
-    stop("baseline, exposure and zeitgebertime must be same length as filepaths or 1")
-    }
-  argument
-}
