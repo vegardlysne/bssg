@@ -4,7 +4,7 @@
 \alias{load_single_file}
 \title{Load a single .txt data file from "data quest art" software}
 \usage{
-load_single_file(path, baseline = 5, exposure = 7, zeitgebertime = 7,
+load_single_file(path, baseline = 5, exposure = 7, baselinestart = 7,
   maxbaseline = 5)
 }
 \arguments{
@@ -14,7 +14,7 @@ load_single_file(path, baseline = 5, exposure = 7, zeitgebertime = 7,
 
 \item{exposure}{number of days in exposure condition, defaults to 7}
 
-\item{zeitgebertime}{number indicating start of light period, defaults to 7 (= 07:00)}
+\item{baselinestart}{number indicating start of baseline in hours (e.g. 7 = 07:00)}
 
 \item{maxbaseline}{number of maximum baseline days in experiment, defaults to 5}
 }

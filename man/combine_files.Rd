@@ -5,7 +5,7 @@
 \title{Combine files from same animal into a tibble}
 \usage{
 combine_files(filepaths, baseline = 5, exposure = 7,
-  zeitgebertime = 7, maxbaseline = 5)
+  baselinestart = 7, maxbaseline = 5)
 }
 \arguments{
 \item{filepaths}{a character vector of file names for the same animal}
@@ -14,7 +14,7 @@ combine_files(filepaths, baseline = 5, exposure = 7,
 
 \item{exposure}{number of days in exposure condition, defaults to 7}
 
-\item{zeitgebertime}{number indicating start of light period, defaults to 7 (= 07:00)}
+\item{baselinestart}{number indicating start of light period, defaults to 7 (= 07:00)}
 
 \item{maxbaseline}{number of maximum baseline days in experiment, defaults to 5}
 }

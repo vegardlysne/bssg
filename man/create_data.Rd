@@ -4,7 +4,7 @@
 \alias{create_data}
 \title{Load data set}
 \usage{
-create_data(filepaths, baseline, exposure = 7, zeitgebertime,
+create_data(filepaths, baseline, exposure = 7, baselinestart,
   maxbaseline = 5)
 }
 \arguments{
@@ -16,7 +16,7 @@ or a number if it is the same for each animal, no default}
 
 \item{exposure}{A number, indicating length of exposure period in days, defaults to 5}
 
-\item{zeitgebertime}{A named list indicating start of light period for each animal,
+\item{baselinestart}{A named list indicating start of baseline in hours (e.g. 7 = 07:00) for each animal,
 or a number if it is the same for each animal}
 
 \item{maxbaseline}{A number of maximum baseline days in experiment, defaults to 5}
@@ -25,7 +25,14 @@ or a number if it is the same for each animal}
 a tibble
 }
 \description{
-Load data set
+Load list of .txt files from data quest art. All the files must be named VARIABLE_GROUP_ID,
+where ID should be numbers only. This makes sure the data set is loaded, the new variable
+is properly named, and the data is aligned to the correct ID.
+}
+\details{
+The filepaths argument must be a list, where every element of the list contains all files for
+one animal. The other arguements may be a single number (if same value for each animal), or a list
+of the same length as filepaths, with one value for each animal.
 }
 \examples{
 animals <- list(B8 = c("./Data/Activity_B_8.txt", "./Data/Bodytemp_B_8.txt"),
@@ -35,7 +42,7 @@ baselinedays <- list(B8 = 5, W12 = 4)
 create_data(animals,
             baseline = baselinedays,
             exposure = 7,
-            zeitgebertime = 7,
+            baselinestart = 7,
             maxbaseline = 5)
 
 }

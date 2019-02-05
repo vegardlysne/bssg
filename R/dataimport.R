@@ -96,6 +96,14 @@ check_length <- function(argument, control){
 
 #' Load data set
 #'
+#' Load list of .txt files from data quest art. All the files must be named VARIABLE_GROUP_ID,
+#' where ID should be numbers only. This makes sure the data set is loaded, the new variable
+#' is properly named, and the data is aligned to the correct ID.
+#'
+#' The filepaths argument must be a list, where every element of the list contains all files for
+#' one animal. The other arguements may be a single number (if same value for each animal), or a list
+#' of the same length as filepaths, with one value for each animal.
+#'
 #' @param filepaths A named list of character vectors, indicating the paths to all
 #' the files of the same animal.
 #' @param baseline A named list of the number of baselinedays for each animal,
@@ -117,7 +125,7 @@ check_length <- function(argument, control){
 #' create_data(animals,
 #'             baseline = baselinedays,
 #'             exposure = 7,
-#'             zeitgebertime = 7,
+#'             baselinestart = 7,
 #'             maxbaseline = 5)
 #'
 create_data <- function(filepaths,
@@ -139,6 +147,46 @@ create_data <- function(filepaths,
                                                baselinestart = z,
                                                maxbaseline = maxbaseline))
 
+}
+
+
+#' Lists files for input to create_data
+#'
+#' The function takes all the files and organises them in a list with one element per ID,
+#' containing all the files for that ID.
+#'
+#' How to use:
+#' Collect all files in a folder, and name them VARIABLE_GROUP_ID, where ID
+#' is numeric and group is characters. Make a character vector of all the filepaths
+#' using the [list.files()] function, and then pass that vector to list_files().
+#'
+#' See example
+#'
+#' @param files a character vector of all the files
+#'
+#' @return a named list of data filepaths
+#' @export
+#'
+#' @examples
+#' List of all files using list.files()
+#' allfiles <- list.files(path = "PATH TO FILES", pattern = ".txt")
+#'
+#' Make list containing one element per ID, which can be passed to [create_data()]
+#'
+#' animals <- list_files(allfiles)
+list_files <- function(files){
+
+  l <- list()
+
+  for(i in unique(str_extract(files, "[:alpha:]+_[:digit:]+"))){
+
+    l[[i]] <- files[str_detect(files, i)]
+  }
+
+  if(length(unique(purrr::map(l, length))) != 1){
+         stop("unequal number of files per ID")
+  }
+  l
 }
 
 
