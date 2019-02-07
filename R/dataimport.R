@@ -98,9 +98,7 @@ check_length <- function(argument, control){
 #'
 #' Load list of .txt files from data quest art. All the files must be named VARIABLE_GROUP_ID,
 #' where ID should be numbers only. This makes sure the data set is loaded, the new variable
-#' is properly named, and the data is aligned to the correct ID.
-#'
-#' The filepaths argument must be a list, where every element of the list contains all files for
+#' is properly named, and the data is aligned to the correct ID. The filepaths argument must be a list, where every element of the list contains all files for
 #' one animal. The other arguements may be a single number (if same value for each animal), or a list
 #' of the same length as filepaths, with one value for each animal.
 #'
@@ -188,5 +186,3 @@ list_files <- function(files){
   }
   l
 }
-
-
