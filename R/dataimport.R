@@ -40,7 +40,8 @@ load_single_file <- function(path,
                                                      Day <= maxbaseline + exposure ~ "Exposure",
                                                      TRUE ~ "Recovery"),
                 t = Syncdatetime-Syncdatetime[1] - (Day-1)*86400 + (maxbaseline-baseline)*86400,
-                Syncdatetime = lubridate::ymd_hms("20190101000000") + t + lubridate::days(Day-1))
+                Syncdatetime = lubridate::ymd_hms("20190101000000") + t + lubridate::days(Day-1)) %>%
+  dplyr::select(-t)
 }
 
 
@@ -81,7 +82,6 @@ combine_files <- function(filepaths,
                   Syncdatetime,
                   Experiment_period,
                   Day,
-                  t,
                   dplyr::everything())
 }
 
