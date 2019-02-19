@@ -31,6 +31,7 @@ load_single_file <- function(path,
                   na = "nan",
                   trim_ws = T) %>%
   purrr::modify_at(1, lubridate::as_datetime) %>%
+  dplyr::filter(Datetime >= lubridate::date(Datetime[1]) + lubridate::hours(baselinestart)) %>%
   dplyr::mutate(Id = stringr::str_extract(basename(path), "(?<=_)[:digit:]+(?=.txt)"),
                 Group = stringr::str_extract(basename(path), "(?<=_)\\w+?(?=_)"),
                 Syncdatetime = Datetime - lubridate::hours(baselinestart),
@@ -176,9 +177,9 @@ list_files <- function(files){
 
   l <- list()
 
-  for(i in unique(str_extract(files, "[:alpha:]+_[:digit:]+"))){
+  for(i in unique(stringr::str_extract(files, "[:alpha:]+_[:digit:]+"))){
 
-    l[[i]] <- files[str_detect(files, i)]
+    l[[i]] <- files[stringr::str_detect(files, i)]
   }
 
   if(length(unique(purrr::map(l, length))) != 1){
