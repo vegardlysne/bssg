@@ -4,11 +4,13 @@
 \alias{format_normalize}
 \title{Normalizes a variable to specified experimental period}
 \usage{
-format_normalize(.data, variable, phase_var = Experiment_period,
+format_normalize(.data, ID_var, variable, phase_var = Experiment_period,
   phase_value = Baseline, add = 0)
 }
 \arguments{
 \item{.data}{a tibble}
+
+\item{ID_var}{the ID variable, for grouping}
 
 \item{variable}{name of the variable that is going to be transformed}
 
@@ -32,6 +34,7 @@ contained in variable Experiment_period in data set d
 
 d \%>\%
   format_normalize(variable = bodytemperature,
+                   ID_var = Id,
                    phase_var = Experiment_period,
                    phase_value = Baseline,
                    add = 0)
